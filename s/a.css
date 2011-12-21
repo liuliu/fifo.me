@@ -1,0 +1,238 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+ *    v2.0 | 20110126
+ *       License: none (public domain)
+ *       */
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+ 	border: 0;
+	font-size: 100%;
+	font: inherit;
+  	vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+
+body {
+	background: #ebebeb;
+	line-height: 1;
+	font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+}
+
+ol, ul {
+	list-style: none;
+}
+
+blockquote, q {
+	quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+ 	content: none;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+div.todo {
+	top: 10px;
+	width: 320px;
+	left: 50%;
+	margin-left: -160px;
+	position: absolute;
+	height: 70%;
+}
+
+div.todo ul {
+	margin-left: 10px;
+	width: 300px;
+}
+
+div.todo ul li {
+	line-height: 30px;
+	height: 30px;
+	padding-left: 7px;
+	font-size: 0.8em;
+	border: 1px #b4b4b4 solid;
+	background-color: #fff;
+	margin-bottom: 10px;
+	box-shadow: 0 0 2px rgba(0,0,0,0.25);
+}
+
+div.todo ul li:hover {
+	color: #000;
+}
+
+div.todo ul .faint {
+	color: #888;
+}
+
+div.todo ul li .r {
+	border: none;
+	background: url('r.png') no-repeat;
+	width: 31px;
+	height: 40px;
+	margin-top: -6px;
+	margin-right: 10px;
+	cursor: pointer;
+	float: right;
+	font-weight: bold;
+	font-size: 1.1em;
+	text-align: center;
+	line-height: 40px;
+	user-select: none;
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+}
+
+div.todo ul li .dot {
+	float: left;
+	background: url('r.png') no-repeat 0px -80px;
+	width: 16px;
+	height: 16px;
+	margin-top: 7px;
+	margin-right: 7px;
+	cursor: pointer;
+	opacity: 0.75;
+}
+
+div.todo ul li .dot:hover {
+	opacity: 1.0;
+}
+
+div.todo ul li .gray {
+	background-position: -16px -80px;
+}
+
+div.todo ul li .yellow {
+	background-position: 0px -96px;
+}
+
+div.todo ul li .green {
+	background-position: 0px -112px;
+}
+
+div.todo ul li .blue {
+	background-position: -16px -96px;
+}
+
+div.todo ul li .red {
+	background-position: -16px -112px;
+}
+
+div.todo ul li .r:active {
+	background-position: 0px -40px;
+}
+
+div.todo div.type-in {
+	background: url('i.png') no-repeat 0px 0px;
+	border-image-slice: 20px 310px 40px 15px;
+	height: 48px;
+	position: relative;
+	z-index: 1;
+}
+
+div.todo div.type-in-error {
+	background-position:0px -48px;
+}
+
+div.todo div.type-in input {
+	margin-top: 12px;
+	margin-left: 4px;
+	padding: 10px 0px 4px 10px;
+	width: 300px;
+	background: none;
+}
+
+div.todo div.type-hint {
+	margin-top: -5px;
+	padding: 10px 8px 5px 8px;
+	line-height: 38px;
+	height: 38px;
+	background: #ebebeb;
+}
+
+div.todo div.type-hint input {
+	background: none;
+	margin-left: 3px;
+	padding: 2px 2px 2px 2px;
+	border: 1px #ebebeb solid;
+	width: 56px;
+}
+
+div.todo div.type-hint input.error {
+	border: 1px #ff6969 solid;
+}
+
+div.todo div.type-hint .pause {
+	background: url('r.png') no-repeat 0px -128px;
+	width: 38px;
+	height: 38px;
+	cursor: pointer;
+}
+
+div.todo div.type-hint .pause:hover {
+	background-position: 0px -166px;
+}
+
+div.todo div.type-hint .continue {
+	background: url('r.png') no-repeat 0px -204px;
+	width: 38px;
+	height: 38px;
+	cursor: pointer;
+}
+
+div.todo div.type-hint .continue:hover {
+	background-position: 0px -242px;
+}
+
+div.todo div#footer {
+	position: fixed;
+	top: auto;
+	left: 50%;
+	margin-left: -160px;
+	width: 320px;
+	bottom: 0px;
+}
+
+.no-border {
+	border: 0px;
+}
+
+.small-font {
+	font-size: 0.75em;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.no-select {
+	cursor: default;
+	user-select: none;
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+}
