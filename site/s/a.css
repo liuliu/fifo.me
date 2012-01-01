@@ -56,15 +56,17 @@ table {
 }
 
 div.todo {
-	top: 10px;
 	width: 320px;
 	left: 50%;
 	margin-left: -160px;
 	position: absolute;
-	height: 70%;
+	height: 100%;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	overflow: hidden;
 }
 
 div.todo ul {
+	margin-top: 10px;
 	margin-left: 10px;
 	width: 300px;
 }
@@ -72,7 +74,6 @@ div.todo ul {
 div.todo ul li {
 	line-height: 30px;
 	height: 30px;
-	padding-left: 7px;
 	font-size: 0.8em;
 	border: 1px #b4b4b4 solid;
 	background-color: #fff;
@@ -86,6 +87,44 @@ div.todo ul li:hover {
 
 div.todo ul .faint {
 	color: #888;
+}
+
+div.todo ul li .title {
+	float: left;
+	height: 100%;
+	cursor: pointer;
+}
+
+div.todo ul li .title .edit {
+	outline: none;
+	-webkit-appearance: none;
+	background: none;
+	margin-top: 4px;
+	padding: 0px 2px 0px 2px;
+	border: 1px #b4b4b4 solid;
+	height: 22px;
+	line-height: 22px;
+	width: 216px;
+	font-size: 0.95em;
+}
+
+div.todo ul li .title .edit-error {
+	border: 1px #ff6969 solid;
+}
+
+div.todo ul li .title .edit:focus {
+	outline: none;
+	-webkit-appearance: none;
+	background: none;
+}
+
+div.todo ul li .title .ellipsis {
+	float: left;
+	height: 100%;
+	max-width: 140px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 div.todo ul li .r {
@@ -105,40 +144,49 @@ div.todo ul li .r {
 	-moz-user-select: -moz-none;
 	-khtml-user-select: none;
 	-webkit-user-select: none;
+    -webkit-background-size: 38px 299px;
 }
 
 div.todo ul li .dot {
 	float: left;
+	margin-top: -3px;
+	margin-left: 0px;
+	width: 30px;
+	height: 36px;
+	cursor: pointer;
+	opacity: 0.75;
+}
+
+div.todo ul li .dot div {
 	background: url('r.png') no-repeat 0px -80px;
 	width: 16px;
 	height: 16px;
-	margin-top: 7px;
-	margin-right: 7px;
-	cursor: pointer;
-	opacity: 0.75;
+	margin-left: 7px;
+	margin-top: 10px;
+    -webkit-background-size: 38px 299px;
 }
 
 div.todo ul li .dot:hover {
 	opacity: 1.0;
 }
 
-div.todo ul li .gray {
+div.todo ul li .gray div {
 	background-position: -16px -80px;
 }
 
-div.todo ul li .yellow {
+div.todo ul li .yellow div {
 	background-position: 0px -96px;
 }
 
-div.todo ul li .green {
+div.todo ul li .green div {
 	background-position: 0px -112px;
 }
 
-div.todo ul li .blue {
+div.todo ul li .blue div {
 	background-position: -16px -96px;
 }
 
-div.todo ul li .red {
+div.todo ul li .red div {
 	background-position: -16px -112px;
 }
 
@@ -152,6 +200,7 @@ div.todo div.type-in {
 	height: 48px;
 	position: relative;
 	z-index: 1;
+    -webkit-background-size: 320px 96px;
 }
 
 div.todo div.type-in-error {
@@ -186,11 +235,28 @@ div.todo div.type-hint input.error {
 	border: 1px #ff6969 solid;
 }
 
+div.todo div.type-hint .popup {
+	position: absolute;
+	background: url('r.png') no-repeat 0px -280px;
+	width: 19px;
+	height: 19px;
+	margin-top: 11px;
+	left: 50%;
+	margin-left: -9.5px;
+	cursor: pointer;
+    -webkit-background-size: 38px 299px;
+}
+
+div.todo div.type-hint .popup:hover {
+	background-position: -19px -280px;
+}
+
 div.todo div.type-hint .pause {
 	background: url('r.png') no-repeat 0px -128px;
 	width: 38px;
 	height: 38px;
 	cursor: pointer;
+    -webkit-background-size: 38px 299px;
 }
 
 div.todo div.type-hint .pause:hover {
@@ -202,6 +268,7 @@ div.todo div.type-hint .continue {
 	width: 38px;
 	height: 38px;
 	cursor: pointer;
+    -webkit-background-size: 38px 299px;
 }
 
 div.todo div.type-hint .continue:hover {
@@ -218,11 +285,19 @@ div.todo div#footer {
 }
 
 .no-border {
-	border: 0px;
+	outline: none;
+	border: none;
+	-webkit-appearance: none;
+}
+
+.no-border:focus {
+	outline: none;
+	border: none;
+	-webkit-appearance: none;
 }
 
 .small-font {
-	font-size: 0.75em;
+	font-size: 0.8em;
 }
 
 .bold {
@@ -235,4 +310,69 @@ div.todo div#footer {
 	-moz-user-select: -moz-none;
 	-khtml-user-select: none;
 	-webkit-user-select: none;
+}
+
+div.vertical-centre {
+	display: table;
+	height: 100%;
+	margin: auto;
+}
+
+div.vertical-centre div {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+div.vertical-centre div div {
+	display: block;
+	text-align: center;
+}
+
+div.vertical-centre div .caption {
+	font-size: 2em;
+	font-weight: bold;
+	margin-bottom: 24px;
+}
+
+div.vertical-centre div .big-popup {
+	background: url('p.png') no-repeat;
+	width: 76px;
+	height: 76px;
+	cursor: pointer;
+	margin: auto;
+    -webkit-background-size: 76px 152px;
+}
+
+div.vertical-centre div .big-popup:hover {
+	background-position: 0px -76px;
+}
+
+@media all and (-webkit-min-device-pixel-ratio:2) {
+	div.todo div.type-in {
+		background-image: url("ihd.png");
+	}
+
+	div.todo ul li .r {
+		background-image: url("rhd.png");
+	}
+
+	div.todo ul li .dot div {
+		background-image: url("rhd.png");
+	}
+
+	div.todo div.type-hint .popup {
+		background-image: url("rhd.png");
+	}
+
+	div.todo div.type-hint .pause {
+		background-image: url("rhd.png");
+	}
+
+	div.todo div.type-hint .continue {
+		background-image: url("rhd.png");
+	}
+
+	.big-popup {
+		background-image: url('phd.png');
+	}
 }

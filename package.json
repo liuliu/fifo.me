@@ -1,0 +1,13 @@
+{
+    "name": "fifo"
+  , "version": "0.0.1"
+  , "private": true
+  , "dependencies": {
+      "express": ">= 2.5.2"
+	, "backbone": ">= 0.5.3"
+	, "facebook-client": ">= 1.3.0"
+	, "now": ">= 0.7.4"
+	, "redis": ">= 0.7.1"
+	, "hiredis": ">= 0.1.13"
+  }
+}
