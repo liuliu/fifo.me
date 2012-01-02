@@ -1,4 +1,4 @@
-<html manifest="fifo.appcache">
+<html>
 <head><title>FIFO, A Deadline Scheduler</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -7,6 +7,21 @@
 <script src="s/u.js"></script>
 <script src="s/b.js"></script>
 </head><body>
+<div id="container"></div>
+<script id="login-template" type="text/template">
+<div class="vertical-centre"><div>
+<div class="login"></div>
+<div id="footer"><a class="hyper" href="/what.html">What is FIFO?</a></div>
+</div></div>
+</script>
+<script id="cover-template" type="text/template">
+<div class="vertical-centre"><div>
+<div class="caption"><%= name %></div>
+<div><div class="big-popup"></div></div>
+<div id="footer"><a class="hyper" href="/what.html">What is FIFO?</a></div>
+</div></div>
+</script>
+<script id="index-template" type="text/template">
 <div class="todo">
 <ul id="todo-list"></ul>
 <div id="footer">
@@ -14,6 +29,7 @@
 <div class="small-font type-hint"><span id="boss" style="float:right" class="continue"></span><span id="elapsed" style="float:right;margin-right:10px" class="bold"></span><span class="no-select bold">Interval</span><input type="text" class="no-border" id="hint-interval"></div>
 </div>
 </div>
+</script>
 <script src="s/a.js"></script>
 <div id="fb-root"></div>
 <script>
@@ -25,7 +41,7 @@ window.fbAsyncInit = function() {
 		cookie     : true, // enable cookies to allow the server to access the session
 		xfbml      : false // parse XFBML
 	});
-	window.todos.fetch();
+	window.appRouter.navigate("/", true);
 };
 
 // Load the SDK Asynchronously

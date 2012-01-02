@@ -502,7 +502,7 @@
 		};
 	}).call(this);
 
-	var AppView = Backbone.View.extend({
+	window.AppView = Backbone.View.extend({
 		/* private variables */
 		current: null, // current todo item
 		state: true, // true - started, false - stopped
@@ -572,9 +572,9 @@
 		scroll: function (todoView, animation) {
 			var todoList = this.$("#todo-list");
 			var page = todoList.height();
-			var top = Math.min(Math.max($(todoView.el).offset().top - todoList.offset().top - 52, -10), page - 4 /* padding to make it looks good */ - ((this.el).height() - this.$("#footer").height()));
+			var top = Math.min(Math.max($(todoView.el).offset().top - todoList.offset().top - 52, -10), Math.max(page - 4 /* padding to make it looks good */ - ((this.el).height() - this.$("#footer").height()), -10));
 			if (animation)
-				todoList.animate({'margin-top': -top + "px"}, 200, function (x, t, b, c, d) { return -c *(t/=d)*(t-2) + b; } /* easing out quad */);
+				todoList.animate({'margin-top': -top + "px"}, 'fast', function (x, t, b, c, d) { return -c *(t/=d)*(t-2) + b; } /* easing out quad */);
 			else
 				todoList.css('margin-top', -top + "px");
 		},
@@ -707,73 +707,132 @@
 
 	getSyncedTime(true); // force to sync at startup
 
-	function scrollable(scroll, clipper, margin) {
+	var animationIndex = 0;
+
+	window.Scrollable = function (scroll, clipper, margin) {
 		margin = margin || {};
 		margin.top = margin.top || 0;
 		margin.bottom = margin.bottom || 0;
 		scroll = $(scroll);
 		clipper = $(clipper);
+		var scrollbar = null;
+		function reinitScrollbar(force) {
+			if (scrollbar) {
+				if (force)
+					scrollbar.remove();
+				else
+					return;
+			}
+			scrollbar = $('<div class="scrollbar"></div>');
+			clipper.append(scrollbar);
+			scrollbar.css('left', clipper.width() - 7);
+			scrollbar.css('top', '0px');
+			scrollbar.css('opacity', '0');
+			scrollbar.sizeToFit = function () {
+				scrollbar.out = (clipper.height() - margin.top - margin.bottom) + 4;
+				scrollbar.on = Math.max(15, scrollbar.out * Math.min(1, (clipper.height() - margin.top - margin.bottom) / scroll.height()));
+				scrollbar.css('height', Math.round(scrollbar.on) + 'px');
+			};
+			scrollbar.sizeToFit();
+			scrollbar.show = function () {
+				if (scrollbar.hid !== null) {
+					clearTimeout(scrollbar.hid);
+					scrollbar.hid = null;
+				}
+				scrollbar.css('opacity', '1');
+			};
+			scrollbar.hid = null;
+			scrollbar.hide = function () {
+				if (scrollbar.hid !== null) {
+					clearTimeout(scrollbar.hid);
+					scrollbar.hid = null;
+				}
+				scrollbar.hid = setTimeout(function () {
+					if (scrollbar) {
+						scrollbar.animate({'opacity': '0'}, 'fast', 'swing', function () {
+							scrollbar.remove();
+							scrollbar = null;
+						});
+						scrollbar.hid = null;
+					}
+				}, 800);
+			};
+		}
 
 		function onWheel(e) {
 			if (e.originalEvent.axis && e.originalEvent.HORIZONTAL_AXIS && e.originalEvent.axis == e.originalEvent.HORIZONTAL_AXIS)
 				return;
 			var delta = e.originalEvent.detail || -0.5 * e.originalEvent.wheelDeltaY;
 			delta *= -0.5;
-			var top = Math.max(Math.min(scroll.offset().top + delta, margin.top), (clipper.height() - margin.bottom) - scroll.height());
+			if (earlyEnd) earlyEnd();
+			var top = Math.max(Math.min(scroll.offset().top + delta, margin.top), Math.min((clipper.height() - margin.bottom) - scroll.height(), margin.top));
+			reinitScrollbar();
+			scrollbar.sizeToFit();
+			scrollbar.show();
+			min = -margin.top;
+			max = Math.max(min, scroll.height() - (clipper.height() - margin.bottom));
+			scrollbar[0].style.transform =
+			scrollbar[0].style.MozTransform =
+			scrollbar[0].style.webkitTransform = tracker(-top);
+			scrollbar.hide();
 			scroll.css("margin-top", top + "px");
 		}
 
 		clipper.bind('mousewheel', onWheel);
 		clipper.bind('MozMousePixelScroll', onWheel);
 
+		/* from Scrollability, added support for Firefox, very nice scrolling with CSS3 keyframes animation */
+
+		var ss = document.createElement("style");
+		document.head.appendChild(ss);
+		globalStyleSheet = document.styleSheets[document.styleSheets.length - 1];
+
 		var touched = false;
 		var isTouch = 'ontouchstart' in window;
 		var position = 0;
-		var max = scroll.height() - (clipper.height() - margin.bottom);
 		var min = -margin.top;
+		var max = Math.max(min, scroll.height() - (clipper.height() - margin.bottom));
 		var timeStep = 0;
 		var lastTime = 0;
 		var velocity = 0;
 		var lastTouch = 0;
-		var stopped = 0;
 		var bounceLimit = 0;
-		var animation = null;
+		var stopped = false;
+		var touchStart = 0;
+		var showedScrollbar = false;
 
 		function onTouchStart(e) {
 			var touch = isTouch ? e.touches[0] : e;
-			lastTouch = touch.clientY;
-			position = -scroll.offset().top;
-			max = scroll.height() - (clipper.height() - margin.bottom);
+			lastTouch = touchStart = touch.clientY;
 			min = -margin.top;
-			bounceLimit = (clipper.height() - margin.bottom - margin.top) * kBounceLimit;
+			max = Math.max(min, scroll.height() - (clipper.height() - margin.bottom));
+			if (earlyEnd) earlyEnd();
+			position = -scroll.offset().top;
+			scroll.css("margin-top", "0px");
+			scroll[0].style.transform =
+			scroll[0].style.MozTransform =
+			scroll[0].style.webkitTransform = reposition(position);
+			bounceLimit = (Math.min(scroll.height(), clipper.height() - margin.bottom - margin.top)) * kBounceLimit;
 			lastTime = e.timeStamp;
-			if (animation !== null) {
-				clearInterval(animation);
-				animation = null;
-			}
-			$.fx.off = true;
+			showedScrollbar = false;
 			touched = true;
 		}
 
-		var kFriction = 0.9;
+		var kFriction = 0.9925;
 		var kStoppedThreshold = 4;
 		var kLockThreshold = 10;
 		var kBounceLimit = 0.75;
-		var kBounceDecelRate = 0.06;
-		var kBounceTime = 40;
-		var kAnimationStep = 25;
+		var kBounceDecelRate = 0.01;
+		var kBounceTime = 240;
+		var kAnimationStep = 4;
+		var kKeyframeIncrement = 24;
 
 		function track(touch, time) {
 			timeStep = time - lastTime;
 			lastTime = time;
 			velocity = -(touch - lastTouch);
 			lastTouch = touch;
-			if (Math.abs(velocity) >= kStoppedThreshold) {
-				if (stopped)
-					--stopped;
-			} else {
-				++stopped;
-			}
+			stopped = !(Math.abs(velocity) >= kStoppedThreshold);
 			if (position > max) {
 				var excess = position - max;
 				velocity *= (1.0 - excess / bounceLimit) * kBounceLimit;
@@ -788,38 +847,72 @@
 		    return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
 		}
 
-		function takeoff() {
-			if (stopped)
-				velocity = 0;
-			position += velocity;
-			velocity = Math.max(-50, Math.min(50, (velocity / timeStep) * kAnimationStep));
-			scroll.css("margin-top", -position + "px");
+		function reposition(position) {
+			return $.browser.webkit ? "translate3d(0," + Math.round(-position) + "px,0)" : "translatey(" + Math.round(-position) + "px)";
+		}
+
+		function tracker(position) {
+			var po = Math.round(margin.top - 2 + (scrollbar.out - scrollbar.on) * (position - min) / (max - min));
+			var height = Math.max(5, Math.min(Math.min(po + scrollbar.on - (margin.top - 2), scrollbar.out + margin.top - 2 - po), scrollbar.on));
+			po = Math.max(margin.top - 2, po) - (scrollbar.on - height) * 0.5; // default transfrom-origin is 50% 50%
+			return $.browser.webkit ? "translate3d(0," + po + "px,0) scaley(" + height / scrollbar.on + ")" : "translatey(" + po + "px) scaley(" + height / scrollbar.on + ")";
+		}
+
+		function generateCSSKeyframes(keyframes, name, time, scrollbar, browser) {
+			browser = browser || "";
+			var lines = ['@' + browser + 'keyframes ' + name + ' {'];
+
+			keyframes.forEach(function(keyframe) {
+				var percent = (keyframe.time / time) * 100;
+				var frame = Math.floor(percent) + '% {'
+					+ browser + 'transform: ' + (scrollbar ? tracker(keyframe.position) : (keyframe.css || reposition(keyframe.position))) + ';'
+					+ '}';
+					lines.push(frame);
+			});
+
+			lines.push('}');
+
+			return lines.join('\n'); 
+		}
+
+		function createTimeline() {
+			var time = 0;
+			var lastPosition = position;
+			var lastKeyTime = 0;
+			var lastDiff = 0;
 			var decelOrigin;
 			var decelDelta;
 			var decelStep = 0;
-			var continues = (position > max || position < min || Math.abs(velocity) > 0.1);
-			function animate() {
+			var decelTime;
+			var keyframes = [];
+
+			var continues = true;
+			while (continues) {
 				if (position > max) {
-					if (velocity > 1e-6) {
+					if (velocity > 0) {
+						// Slowing down
 						var excess = position - max;
 						var elasticity = (1.0 - excess / bounceLimit);
-						velocity = Math.max(0, velocity - kBounceDecelRate) * elasticity;
+						velocity = Math.max(velocity - kBounceDecelRate, 0) * elasticity;
 						position += velocity;
 					} else {
+						// Bouncing back
 						if (!decelStep) {
 							decelOrigin = position;
 							decelDelta = max - position;
 						}
 						position = easeOutExpo(decelStep, decelOrigin, decelDelta, kBounceTime);
-						continues = ++decelStep <= kBounceTime && Math.floor(position) > max;
+						continues = ++decelStep <= kBounceTime && Math.floor(Math.abs(position)) > max;
 					}
 				} else if (position < min) {
-					if (velocity < -1e-6) {
-						var excess = min - position;
-						var elasticity = (1.0 - excess / bounceLimit);
-						velocity = Math.max(0, velocity + kBounceDecelRate) * elasticity;
-						position += velocity;
+					if (velocity < 0) {
+							// Slowing down
+							var excess = min - position;
+							var elasticity = (1.0 - excess / bounceLimit);
+							velocity = Math.min(velocity + kBounceDecelRate, 0) * elasticity;
+							position += velocity;
 					} else {
+						// Bouncing back
 						if (!decelStep) {
 							decelOrigin = position;
 							decelDelta = min - position;
@@ -828,27 +921,139 @@
 						continues = ++decelStep <= kBounceTime && Math.ceil(position) < min;
 					}
 				} else {
+					continues = Math.floor(Math.abs(velocity)*10) > 0;
+					if (!continues)
+						break;
+
 					velocity *= kFriction;
 					position += velocity;
-					continues = (Math.abs(velocity) > 0.1);
 				}
-				scroll.css("margin-top", -position + "px");
-				if (!continues) {
-					if (animation !== null) {
-						clearInterval(animation);
-						animation = null;
-					}
-					$.fx.off = false;
+
+				saveKeyframe(!continues);            
+				time += kAnimationStep;
+			}
+
+			if (position > max) {
+				position = max;
+				saveKeyframe(true);
+			} else if (position < min) {
+				position = min;
+				saveKeyframe(true);
+			}
+
+			var totalTime = keyframes.length ? keyframes[keyframes.length - 1].time : 0;
+
+			var name = "scrollability" + (animationIndex++);
+
+			return {time: totalTime, position: position, keyframes: keyframes, name: name};
+
+			function saveKeyframe(force) {
+				var diff = position - lastPosition;
+				// Add a new frame when we've changed direction, or passed the prescribed granularity
+				if (force || (time-lastKeyTime >= kKeyframeIncrement || (lastDiff < 0 != diff < 0))) {
+					keyframes.push({position: position, time: time});
+
+					lastDiff = diff;
+					lastPosition = position;
+					lastKeyTime = time;
 				}
 			}
-			if (continues) {
-				if (animation !== null) {
-					clearInterval(animation);
-					animation = null;
+		}
+
+		var cleanup = false;
+		var earlyEnd, normalEnd;
+
+		function terminate() {
+			scroll[0].removeEventListener("animationend", normalEnd);
+			scroll[0].removeEventListener("mozAnimationEnd", normalEnd);
+			scroll[0].removeEventListener("webkitAnimationEnd", normalEnd);
+			scroll[0].style.transform =
+			scroll[0].style.MozTransform =
+			scroll[0].style.webkitTransform = "";
+			scroll[0].style.animation =
+			scroll[0].style.MozAnimation =
+			scroll[0].style.webkitAnimation = "";
+			if (scrollbar) {
+				scrollbar[0].style.transform =
+				scrollbar[0].style.MozTransform =
+				scrollbar[0].style.webkitTransform = tracker(position);
+				scrollbar[0].style.animation =
+				scrollbar[0].style.MozAnimation =
+				scrollbar[0].style.webkitAnimation = "";
+				scrollbar.hide();
+			}
+			if (cleanup) {
+				for (var i = 0, end = globalStyleSheet.cssRules.length; i < end; i++)
+					globalStyleSheet.deleteRule(0);
+				cleanup = false;
+			}
+			scroll.css("margin-top", -Math.round(position) + "px");
+			earlyEnd = normalEnd = null;
+		}
+
+		function play(node, name, time) {
+			if (name) {
+				node.style.animation =
+				node.style.MozAnimation =
+				node.style.webkitAnimation = name + " " + time + "ms linear both";
+			}
+			node.style.animationPlayState =
+			node.style.MozAnimationPlayState =
+			node.style.webkitAnimationPlayState = name ? "running" : "paused";
+		}
+
+		function takeoff() {
+			if (stopped)
+				velocity = 0;
+			position += velocity;
+			scroll[0].style.transform =
+			scroll[0].style.MozTransform =
+			scroll[0].style.webkitTransform = reposition(position);
+			if (scrollbar) {
+				scrollbar[0].style.transform =
+				scrollbar[0].style.MozTransform =
+				scrollbar[0].style.webkitTransform = tracker(position);
+			}
+			velocity = (velocity / timeStep) * kAnimationStep;
+
+			var timeline = createTimeline();
+			if (!timeline.time) {
+				terminate();
+				return;
+			}
+
+			earlyEnd = function () {
+				play(scroll[0]);
+				if (scrollbar) play(scrollbar[0]);
+				var transform = $.browser.webkit ?  getComputedStyle(scroll[0]).webkitTransform : getComputedStyle(scroll[0]).MozTransform;
+				if ($.browser.webkit) {
+					position = -(new WebKitCSSMatrix(transform).m42);
+				} else {
+					var vals = transform.split(",");
+					position = -parseFloat(vals[vals.length - 1]);
 				}
-				animation = setInterval(animate, kAnimationStep);
-			} else
-				$.fx.off = false;
+				terminate();
+			}
+
+			normalEnd = function () {
+				position = timeline.keyframes[timeline.keyframes.length - 1].position;
+				if (scrollbar) play(scrollbar[0]);
+				terminate();
+			}
+
+			if (cleanup) {
+				for (var i = 0, end = globalStyleSheet.cssRules.length; i < end; i++)
+					globalStyleSheet.deleteRule(0);
+			}
+        	globalStyleSheet.insertRule(generateCSSKeyframes(timeline.keyframes, timeline.name, timeline.time, false, $.browser.webkit ? '-webkit-' : '-moz-'), 0);
+			if (scrollbar)
+				globalStyleSheet.insertRule(generateCSSKeyframes(timeline.keyframes, timeline.name + 'scrollbar', timeline.time, true, $.browser.webkit ? '-webkit-' : '-moz-'), 0);
+			scroll[0].addEventListener("animationend", normalEnd, false);
+			scroll[0].addEventListener("mozAnimationEnd", normalEnd, false);
+			scroll[0].addEventListener("webkitAnimationEnd", normalEnd, false);
+			play(scroll[0], timeline.name, timeline.time);
+			if (scrollbar) play(scrollbar[0], timeline.name + 'scrollbar', timeline.time);
+			cleanup = true;
 		}
 
 		function onTouchMove(e) {
@@ -856,34 +1061,108 @@
 			if (touched) {
 				var touch = isTouch ? e.touches[0] : e;
 				track(touch.clientY, e.timeStamp);
-				scroll.css("margin-top", -position + "px");
-				if (animation !== null) {
-					clearInterval(animation);
-					animation = null;
+				scroll[0].style.transform =
+				scroll[0].style.MozTransform =
+				scroll[0].style.webkitTransform = reposition(position);
+				if (!showedScrollbar && Math.abs(touch.clientY - touchStart) > 10) {
+					reinitScrollbar(true);
+					scrollbar.sizeToFit();
+					scrollbar[0].style.transform =
+					scrollbar[0].style.MozTransform =
+					scrollbar[0].style.webkitTransform = tracker(position);
+					scrollbar.show();
+					showedScrollbar = true;
+				}
+				if (scrollbar) {
+					scrollbar[0].style.transform =
+					scrollbar[0].style.MozTransform =
+					scrollbar[0].style.webkitTransform = tracker(position);
 				}
 			}
 		}
 
 		function onTouchEnd(e) {
-			takeoff();
-			touched = false;
+			if (touched) {
+				takeoff();
+				touched = false;
+			}
 		}
 
 		if (isTouch) {
-			clipper[0].addEventListener('touchstart', onTouchStart, false);
-			clipper[0].addEventListener('touchmove', onTouchMove, false);
-			clipper[0].addEventListener('touchend', onTouchEnd, false);
+			document.addEventListener('touchstart', onTouchStart, false);
+			document.addEventListener('touchmove', onTouchMove, false);
+			document.addEventListener('touchend', onTouchEnd, false);
 		} else {
-			clipper[0].addEventListener('mousedown', onTouchStart, false);
-			clipper[0].addEventListener('mousemove', onTouchMove, false);
-			clipper[0].addEventListener('mouseup', onTouchEnd, false);
+			document.addEventListener('mousedown', onTouchStart, false);
+			document.addEventListener('mousemove', onTouchMove, false);
+			document.addEventListener('mouseup', onTouchEnd, false);
 		}
 	}
 
 	window.todos = new TodoList;
 
-	$(function () {
-		var application = new AppView({el: $(".todo"), collection: todos});
-		scrollable($("#todo-list"), $(".todo"), {'top': 10, 'bottom': $("#footer").height() - 4});
+	function isMobile() {
+		var agent = navigator.userAgent || navigator.vendor || window.opera;
+		return (/android.+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(agent) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|e\-|e\/|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(di|rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|xda(\-|2|g)|yas\-|your|zeto|zte\-/i.test(agent.substr(0, 4)));
+	}
+
+	var AppRouter = Backbone.Router.extend({
+		routes: {
+			"/login": 'login',
+			"/cover": 'cover',
+			"/": 'index'
+		},
+
+		initialize: function () {
+			this.loginTemplate = _.template($("#login-template").html());
+			this.coverTemplate = _.template($("#cover-template").html());
+			this.indexTemplate = _.template($("#index-template").html());
+		},
+
+		login: function () {
+			$("#container").html(this.loginTemplate({}));
+			$(".login").click(function () {
+				FB.login(function(response) {
+					if (response.authResponse) {
+						window.appRouter.navigate(isMobile() ? "/" : "/cover", true);
+					}
+				}, {display: (isMobile() ? 'touch' : 'page')});
+			});
+		},
+
+		cover: function () {
+			var self = this;
+			FB.api('/me', function (response) {
+				$("#container").html(self.coverTemplate(response));
+				$(".big-popup").click(function () {
+					var top = (window.screen.availHeight - 480) / 2 - 30;
+					var left = (window.screen.availWidth * 4 / 3 - 320) / 2;
+					var newWindow = window.open("/", "FIFO WebApp", "width=320,height=480,top=" + top +",left=" + left);
+					if (window.focus)
+						newWindow.focus();
+				});
+			});
+		},
+
+		index: function () {
+			var self = this;
+			FB.getLoginStatus(function(response) { // to renew access token
+				if (response.status == 'connected') {
+					if (!isMobile() && window.name != "FIFO WebApp") {
+						window.appRouter.navigate(isMobile() ? "/" : "/cover", true);
+					} else {
+						$("#container").html(self.indexTemplate({}));
+						window.application = new AppView({el: $(".todo"), collection: todos});
+						window.scrollable = new Scrollable($("#todo-list"), $(".todo"), {'top': 10, 'bottom': $("#footer").height() - 4});
+						window.todos.fetch();
+					}
+				} else {
+					window.appRouter.navigate("/login", true);
+				}
+			});
+		}
 	});
+
+	window.appRouter = new AppRouter();
+	Backbone.history.start({pushState: true});
 }).call(this);

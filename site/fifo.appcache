@@ -10,8 +10,12 @@ s/phd.png
 s/p.png
 s/rhd.png
 s/r.png
+s/lhd.png
+s/l.png
 
 NETWORK:
 /todos
 /sntp
+s/a.css
+s/a.js
 *

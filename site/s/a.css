@@ -55,6 +55,32 @@ table {
 	border-spacing: 0;
 }
 
+a.hyper {
+	color: #0a7acd;
+	cursor: pointer;
+	padding: 0px 3px 0px 3px;
+	text-decoration: none;
+}
+
+a.hyper:link {
+	color: #0a7acd;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+a.hyper:visited {
+	color: #0a7acd;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+a.hyper:hover {
+	color: #fff;
+	background-color: #0a7acd;
+	cursor: pointer;
+	text-decoration: none;
+}
+
 div.todo {
 	width: 320px;
 	left: 50%;
@@ -69,6 +95,13 @@ div.todo ul {
 	margin-top: 10px;
 	margin-left: 10px;
 	width: 300px;
+}
+
+div.todo .scrollbar {
+	border-radius: 2px;
+	background: rgba(0,0,0,0.25);
+	width: 4px;
+	position: absolute;
 }
 
 div.todo ul li {
@@ -328,10 +361,27 @@ div.vertical-centre div div {
 	text-align: center;
 }
 
+div.vertical-centre div .login {
+	background: url('l.png') no-repeat;
+	cursor: pointer;
+	width: 174px;
+	height: 54px;
+	margin-top: 32px;
+    -webkit-background-size: 174px 54px;
+}
+
+div.vertical-centre div #footer {
+	font-size: 0.85em;
+	margin-top: 72px;
+}
+
 div.vertical-centre div .caption {
 	font-size: 2em;
 	font-weight: bold;
+	margin-top: 12px;
 	margin-bottom: 24px;
+	color: black;
+	text-shadow: rgba(0,0,0,0.4) 0 0 2px;
 }
 
 div.vertical-centre div .big-popup {
@@ -370,6 +420,10 @@ div.vertical-centre div .big-popup:hover {
 
 	div.todo div.type-hint .continue {
 		background-image: url("rhd.png");
+	}
+
+	.login {
+		background-image: url('lhd.png');
 	}
 
 	.big-popup {
