@@ -770,7 +770,7 @@
 			scrollbar.sizeToFit();
 			scrollbar.show();
 			min = -margin.top;
-			max = Math.max(min, scroll.height() - (clipper.height() - margin.bottom));
+			max = Math.max(min + 1e-4, scroll.height() - (clipper.height() - margin.bottom));
 			scrollbar[0].style.transform =
 			scrollbar[0].style.MozTransform =
 			scrollbar[0].style.webkitTransform = tracker(-top);
@@ -791,7 +791,7 @@
 		var isTouch = 'ontouchstart' in window;
 		var position = 0;
 		var min = -margin.top;
-		var max = Math.max(min, scroll.height() - (clipper.height() - margin.bottom));
+		var max = Math.max(min + 1e-4, scroll.height() - (clipper.height() - margin.bottom));
 		var timeStep = 0;
 		var lastTime = 0;
 		var velocity = 0;
@@ -805,7 +805,7 @@
 			var touch = isTouch ? e.touches[0] : e;
 			lastTouch = touchStart = touch.clientY;
 			min = -margin.top;
-			max = Math.max(min, scroll.height() - (clipper.height() - margin.bottom));
+			max = Math.max(min + 1e-4, scroll.height() - (clipper.height() - margin.bottom));
 			if (earlyEnd) earlyEnd();
 			position = -scroll.offset().top;
 			scroll.css("margin-top", "0px");
