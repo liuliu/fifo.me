@@ -2,6 +2,8 @@ CACHE MANIFEST
 
 CACHE:
 channel.html
+s/a.css
+s/a.js
 s/b.js
 s/u.js
 s/ihd.png
@@ -16,6 +18,4 @@ s/l.png
 NETWORK:
 /todos
 /sntp
-s/a.css
-s/a.js
 *
