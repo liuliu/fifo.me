@@ -1,3 +1,7 @@
+var pidfile = fs.openSync("/var/run/fifo/fifo.pid", "w"); 
+fs.writeSync(pidfile, process.pid.toString()); 
+fs.closeSync(pidfile); 
+
 var express = require("express");
 var fifo = express.createServer(
 	  express.logger()
