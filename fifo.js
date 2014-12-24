@@ -1,3 +1,4 @@
+var fs = require("fs");
 var pidfile = fs.openSync("/var/run/fifo/fifo.pid", "w"); 
 fs.writeSync(pidfile, process.pid.toString()); 
 fs.closeSync(pidfile); 

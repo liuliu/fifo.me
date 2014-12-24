@@ -92,12 +92,16 @@ div.todo {
 }
 
 div.todo ul {
-	margin-top: 10px;
 	margin-left: 10px;
 	width: 300px;
+	-webkit-transform: translatey(10px);
+	-moz-transform: translatey(10px);
+	-o-transform: translatey(10px);
+	-ms-transform: translatey(10px);
+	transform: translatey(10px);
 }
 
-div.todo .scrollbar {
+div.todo .indicator {
 	border-radius: 2px;
 	background: rgba(0,0,0,0.25);
 	width: 4px;
@@ -125,10 +129,17 @@ div.todo ul .faint {
 div.todo ul li .title {
 	float: left;
 	height: 100%;
+	width: 224px;
+	overflow: hidden;
 	cursor: pointer;
 }
 
-div.todo ul li .title .edit {
+div.todo ul li .title .text {
+	height: 100%;
+	width: 300px;
+}
+
+div.todo ul li .title .text .edit {
 	outline: none;
 	-webkit-appearance: none;
 	background: none;
@@ -141,17 +152,17 @@ div.todo ul li .title .edit {
 	font-size: 0.95em;
 }
 
-div.todo ul li .title .edit-error {
+div.todo ul li .title .text .edit-error {
 	border: 1px #ff6969 solid;
 }
 
-div.todo ul li .title .edit:focus {
+div.todo ul li .title .text .edit:focus {
 	outline: none;
 	-webkit-appearance: none;
 	background: none;
 }
 
-div.todo ul li .title .ellipsis {
+div.todo ul li .title .text .ellipsis {
 	float: left;
 	height: 100%;
 	max-width: 140px;

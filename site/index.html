@@ -6,6 +6,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="s/u.js"></script>
 <script src="s/b.js"></script>
+<script src="s/d.js"></script>
 </head><body>
 <div id="container"></div>
 <script id="login-template" type="text/template">
@@ -30,25 +31,9 @@
 </div>
 </div>
 </script>
-<script src="s/a.js"></script>
 <div id="fb-root"></div>
+<script src="s/s.js"></script>
+<script src="s/m.js"></script>
+<script src="s/a.js"></script>
 <script>
-window.fbAsyncInit = function() {
-	FB.init({
-		appId      : '312070565482641', // App ID
-		channelUrl : '//fifo.me/channel.html', // Channel File
-		status     : true, // check login status
-		cookie     : true, // enable cookies to allow the server to access the session
-		xfbml      : false // parse XFBML
-	});
-	window.appRouter.navigate("/", true);
-};
-
-// Load the SDK Asynchronously
-(function(d){
-	var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
-	js = d.createElement('script'); js.id = id; js.async = true;
-	js.src = "//connect.facebook.net/en_US/all.js";
-	d.getElementsByTagName('head')[0].appendChild(js);
-}(document));
 </script>
